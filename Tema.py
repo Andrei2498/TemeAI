@@ -43,13 +43,11 @@ class State:
 def initialize():
     print("Initialize state...")
     state = State(3, 3, 3, 1, 0, 0)
-    # print(state.see_object())
     return state
 
 
 def is_final_state(state):
     if state.number_of_missionary_left + state.number_of_cannibals_left == 0 and state.boat_position == 2:
-        print(state.see_object())
         return True
     else:
         return False
@@ -183,23 +181,18 @@ def generate_solution(state, number_people):
 def strategy_backtracking(state):
     solution = [state]
     k_list = [0]
-    while not is_final_state(state):
+    while not is_final_state(solution[len(solution) - 1]):
         if k_list[len(k_list) - 1] > state.boat_capacity:
             solution.pop(len(solution) - 1)
             k_list.pop(len(k_list) - 1)
-        k_list[len(k_list) - 1] += 1
-        aux = generate_solution(solution[len(solution) - 1], k_list[len(k_list) - 1])
-        for it in aux:
-            if ((validation(it, solution[len(solution) - 1].number_of_missionary_left - it.number_of_missionary_left,
-                           solution[len(solution) - 1].number_of_cannibals_left - it.number_of_cannibals_left)
-                and it.boat_position == 2)
-                    or (validation(it, solution[len(
-                solution) - 1].number_of_missionary_right - it.number_of_missionary_right,
-                                   solution[len(solution) - 1].number_of_cannibals_right - it.number_of_cannibals_right)
-                        and it.boat_position == 1)) and it not in solution and is_valid_state(it):
-                solution.append(it)
-                k_list.append(0)
-                break
+        if not is_final_state(solution[len(solution) - 1]):
+            k_list[len(k_list) - 1] += 1
+            aux = generate_solution(solution[len(solution) - 1], k_list[len(k_list) - 1])
+            for it in aux:
+                if ((validation(it,solution[len(solution) - 1].number_of_missionary_left - it.number_of_missionary_left,solution[len( solution) - 1].number_of_cannibals_left - it.number_of_cannibals_left) and it.boat_position == 2) or (validation(it, solution[len(solution) - 1].number_of_missionary_right - it.number_of_missionary_right, solution[len(solution) - 1].number_of_cannibals_right - it.number_of_cannibals_right) and it.boat_position == 1)) and it not in solution and is_valid_state( it):
+                    solution.append(it)
+                    k_list.append(0)
+                    break
     for i in solution:
         print(i.see_object())
 
