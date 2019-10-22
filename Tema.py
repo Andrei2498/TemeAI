@@ -42,7 +42,7 @@ class State:
 
 def initialize():
     print("Initialize state...")
-    state = State(3, 3, 3, 1, 0, 0)
+    state = State(5, 5, 5, 1, 0, 0)
     return state
 
 
@@ -80,7 +80,9 @@ def validation(state, missionary_moved, cannibal_moved):
         return False
     elif missionary_moved + cannibal_moved > new_state.boat_capacity:
         return False
-    elif algorithm_type == 0 and new_state in states:
+    elif algorithm_type == 0 and states.count(new_state) > 2:
+        return False
+    elif algorithm_type == 0 and new_state.number_of_cannibals_right-new_state.number_of_missionary_right > new_state.boat_capacity:
         return False
     return True
 
@@ -97,8 +99,13 @@ def is_valid_state(state):
 def random_algorithm(b, missionary_moved, cannibal_moved, state):
     if state.number_of_cannibals_left + state.number_of_missionary_left < b and state.boat_position == 1:
         number_of_people_in_boat = random.randint(1, state.number_of_missionary_left + state.number_of_cannibals_left)
-    elif state.number_of_missionary_right + state.number_of_cannibals_right < b and state.boat_position == 2:
-        number_of_people_in_boat = random.randint(1, state.number_of_cannibals_right + state.number_of_missionary_right)
+    elif state.boat_position == 2 and state.number_of_missionary_right > state.number_of_cannibals_right:
+        number_of_people_in_boat = 1
+    elif state.boat_position == 2 and state.number_of_missionary_right == state.number_of_cannibals_right:
+        number_of_people_in_boat = random.randint(1, 2)
+    elif state.boat_position == 2 and state.number_of_missionary_right < state.number_of_cannibals_right:
+        number_of_people_in_boat = 1
+        # number_of_people_in_boat = random.randint(1, state.number_of_cannibals_right + state.number_of_missionary_right)
     else:
         number_of_people_in_boat = random.randint(1, b)
     while number_of_people_in_boat > 0:
@@ -144,6 +151,8 @@ def strategy_random(state, count):
     else:
         if count > 100:
             reset()
+    for i in states:
+        print(i.see_object())
 
 
 def reset():
@@ -189,7 +198,7 @@ def strategy_backtracking(state):
             k_list[len(k_list) - 1] += 1
             aux = generate_solution(solution[len(solution) - 1], k_list[len(k_list) - 1])
             for it in aux:
-                if ((validation(it,solution[len(solution) - 1].number_of_missionary_left - it.number_of_missionary_left,solution[len( solution) - 1].number_of_cannibals_left - it.number_of_cannibals_left) and it.boat_position == 2) or (validation(it, solution[len(solution) - 1].number_of_missionary_right - it.number_of_missionary_right, solution[len(solution) - 1].number_of_cannibals_right - it.number_of_cannibals_right) and it.boat_position == 1)) and it not in solution and is_valid_state( it):
+                if ((validation(it, solution[len(solution) - 1].number_of_missionary_left - it.number_of_missionary_left, solution[len(solution) - 1].number_of_cannibals_left - it.number_of_cannibals_left) and it.boat_position == 2) or (validation(it, solution[len(solution) - 1].number_of_missionary_right - it.number_of_missionary_right, solution[len(solution) - 1].number_of_cannibals_right - it.number_of_cannibals_right) and it.boat_position == 1)) and it not in solution and is_valid_state(it):
                     solution.append(it)
                     k_list.append(0)
                     break
@@ -197,6 +206,57 @@ def strategy_backtracking(state):
         print(i.see_object())
 
 
+def strategy_iddfs(state, depth):
+    dfs_stack = [state]
+    current_depth = 0
+    correct_stack = [state]
+    states_visited = [state]
+    number_of_states_per_lvl = [1]
+
+    while not is_final_state(correct_stack[-1]):
+        number = 0
+        if current_depth < depth and current_depth % 2 == 0:
+            if correct_stack[-1].number_of_missionary_left + correct_stack[-1].number_of_cannibals_left < state.boat_capacity:
+                for i in reversed(generate_solution(dfs_stack[-1], correct_stack[-1].number_of_missionary_left + correct_stack[-1].number_of_cannibals_left)):
+                    if is_valid_state(i):
+                        dfs_stack = dfs_stack + [i]
+                        number += 1
+            else:
+                for i in reversed(generate_solution(dfs_stack[-1], state.boat_capacity)):
+                    if is_valid_state(i) and i not in correct_stack:
+                        dfs_stack = dfs_stack + [i]
+                        number += 1
+                current_depth += 1
+        elif current_depth < depth and current_depth % 2 == 1:
+            for i in reversed(generate_solution(dfs_stack[-1], 1)):
+                if is_valid_state(i) and i not in correct_stack:
+                    dfs_stack = dfs_stack + [i]
+                    number += 1
+            current_depth += 1
+        number_of_states_per_lvl.append(number)
+        if current_depth % 2 == 0:
+            while not validation(correct_stack[-1], -dfs_stack[-1].number_of_missionary_left+correct_stack[-1].number_of_missionary_left, -dfs_stack[-1].number_of_cannibals_left + correct_stack[-1].number_of_cannibals_left):
+                dfs_stack.pop()
+                number_of_states_per_lvl[-1] -= 1
+        else:
+            while not validation(correct_stack[-1], dfs_stack[-1].number_of_missionary_right-correct_stack[-1].number_of_missionary_right, dfs_stack[-1].number_of_cannibals_right - correct_stack[-1].number_of_cannibals_right):
+                dfs_stack.pop()
+                number_of_states_per_lvl[-1] -= 1
+        if number_of_states_per_lvl[-1] == 0:
+            number_of_states_per_lvl.pop()
+            current_depth -= 1
+            correct_stack.pop()
+            dfs_stack.pop()
+        # print(len(dfs_stack))
+        correct_stack = correct_stack + [dfs_stack[-1]]
+
+        # for i in correct_stack:
+        #     print(i.see_object())
+        # print("Urmeaza new state ")
+
+    #Afisare
+    for i in dfs_stack:
+        print(i.see_object())
 """
     bp = 1 -> left
     bp = 2 -> right
@@ -205,4 +265,5 @@ if __name__ == "__main__":
     print("Start....")
     start_state = initialize()
     # strategy_random(start_state, 0)
-    strategy_backtracking(start_state)
+    # strategy_backtracking(start_state)
+    strategy_iddfs(start_state, 100)
