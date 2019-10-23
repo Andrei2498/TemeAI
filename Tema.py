@@ -42,7 +42,7 @@ class State:
 
 def initialize():
     print("Initialize state...")
-    state = State(5, 5, 5, 1, 0, 0)
+    state = State(4, 5, 4, 1, 0, 0)
     return state
 
 
@@ -187,6 +187,23 @@ def generate_solution(state, number_people):
     return result
 
 
+def new_generator(current_state, number_of_people):
+    numbers = [(i, j) for i in range(0, number_of_people + 1) for j in range(0, number_of_people + 1) if i + j == number_of_people]
+    state_list = []
+    if current_state.boat_position == 1:
+        for item in numbers:
+            state_list.append(State(current_state.boat_capacity, current_state.number_of_missionary_left - item[0], current_state.number_of_cannibals_left - item[1],
+                                    current_state.boat_position, current_state.number_of_missionary_right + item[0], current_state.number_of_cannibals_right + item[1]))
+    else:
+        for item in numbers:
+            state_list.append(State(current_state.boat_capacity, current_state.number_of_missionary_left + item[0], current_state.number_of_cannibals_left + item[1],
+                                    current_state.boat_position, current_state.number_of_missionary_right + item[0], current_state.number_of_cannibals_right - item[1]))
+    for it in state_list:
+        if not is_valid_state(it):
+            state_list.remove(it)
+    return state_list
+
+
 def strategy_backtracking(state):
     solution = [state]
     k_list = [0]
@@ -196,7 +213,7 @@ def strategy_backtracking(state):
             k_list.pop(len(k_list) - 1)
         if not is_final_state(solution[len(solution) - 1]):
             k_list[len(k_list) - 1] += 1
-            aux = generate_solution(solution[len(solution) - 1], k_list[len(k_list) - 1])
+            aux = new_generator(solution[len(solution) - 1], k_list[len(k_list) - 1])
             for it in aux:
                 if ((validation(it, solution[len(solution) - 1].number_of_missionary_left - it.number_of_missionary_left, solution[len(solution) - 1].number_of_cannibals_left - it.number_of_cannibals_left) and it.boat_position == 2) or (validation(it, solution[len(solution) - 1].number_of_missionary_right - it.number_of_missionary_right, solution[len(solution) - 1].number_of_cannibals_right - it.number_of_cannibals_right) and it.boat_position == 1)) and it not in solution and is_valid_state(it):
                     solution.append(it)
@@ -265,5 +282,5 @@ if __name__ == "__main__":
     print("Start....")
     start_state = initialize()
     # strategy_random(start_state, 0)
-    # strategy_backtracking(start_state)
-    strategy_iddfs(start_state, 100)
+    strategy_backtracking(start_state)
+    # strategy_iddfs(start_state, 100)
