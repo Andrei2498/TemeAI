@@ -221,6 +221,18 @@ def heuristic_function(game):
     return cost
 
 
+def check_pawns_behind(pos, game):
+    result = [False, False, False]
+    for i in game.black_pawn_list:
+        if pos[0]-1 in i:
+            result[0] = True
+        if pos[0] in i:
+            result[1] = True
+        if pos[0] in i+1:
+            result[2] = True
+    return True
+
+
 def calculate_attack_and_defense_position(state, game):
     cost = 0
     if 1 <= state[0] <= 6:
@@ -232,12 +244,14 @@ def calculate_attack_and_defense_position(state, game):
             cost += 1
         if game.black_pawn_list.count((state[0] + 1, state[1] - 1)) == 1:
             cost += 1
-    if state[0] == 0:
+        #Defensive
+        result = check_pawns_behind(state, game)
+    elif state[0] == 0:
         if game.white_pawn_list.count((state[0] + 1, state[1] + 1)) == 1:
             cost -= 1
         elif game.black_pawn_list.count((state[0] + 1, state[1] - 1)) == 1:
             cost += 1
-    if state[0] == 7:
+    elif state[0] == 7:
         if game.black_pawn_list.count((state[0] - 1, state[1] - 1)) == 1:
             cost += 1
         elif game.white_pawn_list.count((state[0] - 1, state[1] + 1)) == 1:
