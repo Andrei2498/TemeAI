@@ -165,6 +165,9 @@ def play(game, screen):
                 if len(game_list) == 0 and len(game.black_pawn_list) == len(game.white_pawn_list):
                     running = False
                     print("Draw")
+                elif len(game_list) == 0 and len(game.black_pawn_list) < len(game.white_pawn_list):
+                    running = False
+                    print("Player won the game!")
                 elif len(game_list) > 0:
                     sorted(game_list, key=lambda state: state[1])
                     set_minus = set(game.black_pawn_list).difference(set(game_list[0][0].black_pawn_list))
@@ -279,4 +282,3 @@ def get_available_position(state, game):
 
 if __name__ == "__main__":
     initialize()
-
