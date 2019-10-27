@@ -213,6 +213,11 @@ def heuristic_function(game):
         cost -= (7 - state[1])
     for position in game.black_pawn_list:
         cost += calculate_attack_and_defense_position(position, game)
+    # comentariu pentru Andrei
+    # pentru orice pozitie
+    last_state = (3, 6)
+    state = (3, 5) # am modificat pionul de pe (3, 6)
+    cost += calculate_attack_and_defense_position(state, game.black_pawn_list.remove(last_state))
     return cost
 
 
