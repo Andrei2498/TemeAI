@@ -1,5 +1,10 @@
 import copy
+import time
+from anytree import AnyNode, RenderTree, AsciiStyle
+from anytree.cachedsearch import findall
 
+import heuristic_white
+import util
 import pygame
 
 
@@ -16,7 +21,7 @@ class Game:
         self.black_pawn_list = black_list
 
     def __str__(self):
-        return "White list: " + self.white_pawn_list.__str__() + "\n Black list: " + self.black_pawn_list.__str__()
+        return "White list: " + self.white_pawn_list.__str__() + " Black list: " + self.black_pawn_list.__str__()
 
     def __deepcopy__(self, memo):
         return Game(copy.deepcopy(self.white_pawn_list), copy.deepcopy(self.black_pawn_list))
@@ -152,7 +157,7 @@ def black_turn(pos, screen):
 def play(game, screen):
     running = True
     while running:
-        if not is_final(game):
+        if util.is_final(game) == -1:
             if game.turn == 1:
                 for event in pygame.event.get():
                     if event.type == pygame.MOUSEBUTTONUP:
@@ -160,144 +165,56 @@ def play(game, screen):
                     elif event.type == pygame.QUIT:
                         running = False
             else:
-                print(heuristic_function(game))
-                game_list = calculate_states(game)
-                if len(game_list) == 0 and len(game.black_pawn_list) == len(game.white_pawn_list):
-                    running = False
-                    print("Draw")
-                elif len(game_list) == 0 and len(game.black_pawn_list) < len(game.white_pawn_list):
-                    running = False
-                    print("Player won the game!")
-                elif len(game_list) > 0:
-                    sorted(game_list, key=lambda state: state[1])
-                    set_minus = set(game.black_pawn_list).difference(set(game_list[0][0].black_pawn_list))
-                    game.black_pawn_position = list(set_minus)[0]
-                    set_minus_reverse = set(game_list[0][0].black_pawn_list).difference(set(game.black_pawn_list))
-                    black_pawn_position_after = list(set_minus_reverse)[0]
-                    game.white_pawn_list = game_list[0][0].white_pawn_list
-                    game.black_pawn_list = game_list[0][0].black_pawn_list
-                    black_turn(black_pawn_position_after, screen)
-                    delete_element(game.black_pawn_position, screen)
-                    print(game.black_pawn_list)
-                    game.turn = 1
+                min_max_algorithm(game, 2)
+                game.turn = 1
         else:
             running = False
 
 
-def is_final(game):
-    for state in game.white_pawn_list:
-        if state[1] == 0:
-            print("Player won the game!")
-            return True
-    for state in game.black_pawn_list:
-        if state[1] == 7:
-            print("Computer won the game!")
-            return True
-    if len(game.black_pawn_list) == 1 and len(game.white_pawn_list) == 1 and game.white_pawn_list[0][1] == game.black_pawn_list[0][1] + 1:
-        print("Draw")
-        return True
-    if len(game.black_pawn_list) == 0:
-        print("Player won the game!")
-        return True
-    if len(game.white_pawn_list) == 0:
-        print("Computer won the game!")
-        return True
-    return False
+def build_white_level(game, id, level, root):
+    node_list = []
+    white_possible_moves = util.get_all_available_white(game)
+    for index in white_possible_moves:
+        node_list.append(AnyNode(parent=root, id=(id + "/white_move_" + str(level)), game=util.return_new_state_after_move_white(index[0], index[1], game), new_move=index[1], last_move=index[0], cost=0))
+    return node_list
 
 
-def heuristic_function(game):
-    cost = 0
-    for state in game.black_pawn_list:
-        cost += state[1]
-    for state in game.white_pawn_list:
-        cost -= (7 - state[1])
-    for position in game.black_pawn_list:
-        cost += calculate_attack_and_defense_position(position, game)
-    # comentariu pentru Andrei
-    # pentru orice pozitie
-    last_state = (3, 1)
-    state = (3, 2) # am modificat pionul de pe (3, 6)
-    cost += calculate_attack_and_defense_position(state, game.black_pawn_list.remove(last_state))
-    return cost
+def build_black_level(game, id, level, root):
+    node_list = []
+    white_possible_moves = util.get_all_available_black(game)
+    for index in white_possible_moves:
+        node_list.append(AnyNode(parent=root, id=(id + "/black_move_" + str(level)), game=util.return_new_state_after_move_black(index[0], index[1], game), new_move=index[1], last_move=index[0], cost=0))
+    return node_list
 
 
-def check_pawns_behind(pos, game):
-    result = [False, False, False]
-    for i in game.black_pawn_list:
-        if pos[0]-1 in i:
-            result[0] = True
-        if pos[0] in i:
-            result[1] = True
-        if pos[0] in i+1:
-            result[2] = True
-    return True
-
-
-def calculate_attack_and_defense_position(state, game):
-    cost = 0
-    if 1 <= state[0] <= 6:
-        if game.white_pawn_list.count((state[0] + 1, state[1] + 1)) == 1:
-            cost -= 1
-        if game.white_pawn_list.count((state[0] - 1, state[1] + 1)) == 1:
-            cost -= 1
-        if game.black_pawn_list.count((state[0] - 1, state[1] - 1)) == 1:
-            cost += 1
-        if game.black_pawn_list.count((state[0] + 1, state[1] - 1)) == 1:
-            cost += 1
-        #Defensive
-        result = check_pawns_behind(state, game)
-    elif state[0] == 0:
-        if game.white_pawn_list.count((state[0] + 1, state[1] + 1)) == 1:
-            cost -= 1
-        elif game.black_pawn_list.count((state[0] + 1, state[1] - 1)) == 1:
-            cost += 1
-    elif state[0] == 7:
-        if game.black_pawn_list.count((state[0] - 1, state[1] - 1)) == 1:
-            cost += 1
-        elif game.white_pawn_list.count((state[0] - 1, state[1] + 1)) == 1:
-            cost -= 1
-    return cost
-
-
-def create_new_game(white_list, black_list):
-    game = Game(white_list, black_list)
-    return game
-
-
-def calculate_states(game):
-    lst = []
-    for it in game.black_pawn_list:
-        auxiliar_state = get_available_position(it, game)
-        for i in auxiliar_state:
-            new_game = copy.deepcopy(game)
-            new_game.black_pawn_list[new_game.black_pawn_list.index(it)] = i
-            if new_game.white_pawn_list.count(i) > 0:
-                new_game.white_pawn_list.remove(i)
-            lst.append((new_game, heuristic_function(new_game)))
-    return lst
-
-
-def get_available_position(state, game):
-    state_list = []
-    if state[0] == 0:
-        if game.white_pawn_list.count((state[0], state[1] + 1)) == 0 and game.black_pawn_list.count((state[0], state[1] + 1)) == 0:
-            state_list.append((state[0], state[1] + 1))
-        if game.white_pawn_list.count((state[0] + 1, state[1] + 1)) == 1 and game.black_pawn_list.count((state[0] + 1, state[1] + 1)) == 0:
-            state_list.append((state[0] + 1, state[1] + 1))
-    if state[0] == 7:
-        if game.white_pawn_list.count((state[0], state[1] + 1)) == 0 and game.black_pawn_list.count((state[0], state[1] + 1)) == 0:
-            state_list.append((state[0], state[1] + 1))
-        if game.white_pawn_list.count((state[0] - 1, state[1] + 1)) == 1 and game.black_pawn_list.count((state[0] - 1, state[1] + 1)) == 0:
-            state_list.append((state[0] - 1, state[1] + 1))
-    if 1 <= state[0] <= 6:
-        if game.white_pawn_list.count((state[0], state[1] + 1)) == 0 and game.black_pawn_list.count((state[0], state[1] + 1)) == 0:
-            state_list.append((state[0], state[1] + 1))
-        if game.white_pawn_list.count((state[0] - 1, state[1] + 1)) == 1 and game.black_pawn_list.count((state[0] - 1, state[1] + 1)) == 0:
-            state_list.append((state[0] - 1, state[1] + 1))
-        if game.white_pawn_list.count((state[0] + 1, state[1] + 1)) == 1 and game.black_pawn_list.count((state[0] + 1, state[1] + 1)) == 0:
-            state_list.append((state[0] + 1, state[1] + 1))
-    return state_list
+def min_max_algorithm(game, level):
+    root = AnyNode(id="/root", game=game)
+    next_root = [root]
+    new_root_list = []
+    current_level = 1
+    aux_level = level
+    while aux_level > 0:
+        for roots in next_root:
+            if aux_level > 0:
+                for i in build_black_level(roots.game, roots.id, current_level, roots):
+                    for j in build_white_level(i.game, i.id, current_level, i):
+                        new_root_list.append(j)
+            else:
+                break
+        next_root.clear()
+        next_root = copy.copy(new_root_list)
+        aux_level -= 1
+        current_level += 1
+    leaves = util.get_all_leave(root, level)
+    for leave in leaves:
+        heuristic_white.heuristic_function(leave)
+        print(leave)
+    # print(leaves)
 
 
 if __name__ == "__main__":
+    # start_time = time.time()
+    # game = Game([(0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6), (7, 6)], [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1)])
+    # min_max_algorithm(game, 2)
+    # print(time.time() - start_time)
     initialize()
