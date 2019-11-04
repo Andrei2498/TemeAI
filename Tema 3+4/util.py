@@ -101,3 +101,12 @@ def is_final(game):
         print("Computer won the game!")
         return 2
     return -1
+
+
+def convert_position_type_in_number(position, game):
+    if position in game.white_pawn_list:
+        return 1
+    elif position in game.black_pawn_list:
+        return -1
+    else:
+        return 0
