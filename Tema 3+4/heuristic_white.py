@@ -1,9 +1,17 @@
 import copy
-
+import util
 
 def heuristic_function(leave):
     cost = 0
-    cost += calculate_attack_and_defense_position(leave.new_move, leave.last_move, leave.game)
+    state_situation = util.is_final(leave.game)
+    if state_situation == 0:
+        leave.cost = 0
+    elif state_situation == 1:
+        leave.cost = 200
+    elif state_situation == 2:
+        leave.cost = -200
+    elif state_situation == -1:
+        leave.cost = calculate_attack_and_defense_position(leave.new_move, leave.last_move, leave.game)
 
 
 def calculate_attack_and_defense_position(new_position, last_position, updated_game):
@@ -19,9 +27,22 @@ def calculate_attack_and_defense_position(new_position, last_position, updated_g
 
 def defensive_game_style(new_position, last_position, updated_game):
     cost = 0
-    if (new_position[0] - 1, new_position[1]) in updated_game.black_pawn_list and (new_position[0], new_position[1] - 1) == last_position:
-        cost -= 10
-    # if
+    for i in [6, 5, 4, 3]:
+        for j in [0, 1, 2, 3, 4, 5]:
+            current_board = []
+            current_board.append(util.convert_position_type_in_number((i + 2, j), updated_game))
+            current_board.append(util.convert_position_type_in_number((i + 2, j + 1), updated_game))
+            current_board.append(util.convert_position_type_in_number((i + 2, j + 2), updated_game))
+
+            current_board.append(util.convert_position_type_in_number((i + 1, j), updated_game))
+            current_board.append(util.convert_position_type_in_number((i + 1, j + 1), updated_game))
+            current_board.append(util.convert_position_type_in_number((i + 1, j + 2), updated_game))
+
+            current_board.append(util.convert_position_type_in_number((i, j), updated_game))
+            current_board.append(util.convert_position_type_in_number((i, j + 1), updated_game))
+            current_board.append(util.convert_position_type_in_number((i, j + 2), updated_game))
+            if tuple(current_board) in util.defense_patterns:
+                cost += util.defense_patterns.get(tuple(current_board))
     return cost
 
 
@@ -71,3 +92,5 @@ def pawns_in_defense(position, game):
         if (position[0] - 1, position[1] + 1) in game.white_pawn_list:
             cnt += 1
     return cnt
+
+
