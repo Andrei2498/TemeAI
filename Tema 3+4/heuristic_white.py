@@ -1,5 +1,5 @@
-import copy
 import util
+
 
 def heuristic_function(leave):
     cost = 0
@@ -29,25 +29,26 @@ def defensive_game_style(new_position, last_position, updated_game):
     cost = 0
     for i in [6, 5, 4, 3]:
         for j in [0, 1, 2, 3, 4, 5]:
-            current_board = []
-            current_board.append(util.convert_position_type_in_number((i + 2, j), updated_game))
-            current_board.append(util.convert_position_type_in_number((i + 2, j + 1), updated_game))
-            current_board.append(util.convert_position_type_in_number((i + 2, j + 2), updated_game))
-
-            current_board.append(util.convert_position_type_in_number((i + 1, j), updated_game))
-            current_board.append(util.convert_position_type_in_number((i + 1, j + 1), updated_game))
-            current_board.append(util.convert_position_type_in_number((i + 1, j + 2), updated_game))
-
-            current_board.append(util.convert_position_type_in_number((i, j), updated_game))
-            current_board.append(util.convert_position_type_in_number((i, j + 1), updated_game))
-            current_board.append(util.convert_position_type_in_number((i, j + 2), updated_game))
+            current_board = util.board_patterns(updated_game, i, j)
             if tuple(current_board) in util.defense_patterns:
                 cost += util.defense_patterns.get(tuple(current_board))
+            if tuple(current_board) in util.initial_patterns_white:
+                cost += util.initial_patterns_white.get(tuple(current_board))
+    for i in [1, 2, 3, 4]:
+        for j in [0, 1, 2, 3, 4, 5]:
+            current_board = util.board_patterns(updated_game, i, j)
+            if tuple(current_board) in util.initial_black_patterns:
+                cost += util.initial_black_patterns.get(tuple(current_board))
     return cost
 
 
 def offensive_game_style(new_position, last_position, updated_game):
     cost = 0
+    for i in [3, 2, 1]:
+        for j in [0, 1, 2, 3, 4, 5]:
+            current_board = util.board_patterns(updated_game, i, j)
+            if tuple(current_board) in util.attack_patterns:
+                cost += util.attack_patterns.get(tuple(current_board))
     return cost
 
 
@@ -92,5 +93,3 @@ def pawns_in_defense(position, game):
         if (position[0] - 1, position[1] + 1) in game.white_pawn_list:
             cnt += 1
     return cnt
-
-

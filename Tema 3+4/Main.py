@@ -1,13 +1,10 @@
 import copy
-import time
-from anytree import AnyNode, RenderTree, AsciiStyle
-from anytree.cachedsearch import findall
-
+from anytree import AnyNode
 import heuristic_white
 import util
 import pygame
 
-
+algorithm = ""
 class Game:
     white_pawn_list = []
     black_pawn_list = []
@@ -127,9 +124,7 @@ def move_piece(pos, screen, game):
         game.black_pawn_list.remove(pos)
     for i in range(0, len(game.white_pawn_list)):
         if game.white_pawn_list[i] == game.white_pawn_position:
-            print(game.white_pawn_list[i])
             game.white_pawn_list[i] = pos
-            print(game.white_pawn_list[i])
     game.list_of_available_boxes.remove(pos)
     delete_element(game.white_pawn_position, screen)
 
@@ -165,7 +160,11 @@ def play(game, screen):
                     elif event.type == pygame.QUIT:
                         running = False
             else:
-                min_max_algorithm(game, 2)
+                choose_node = min_max_algorithm(game, 2)
+                # choose_node = alpha_beta_pruning(game, 2)
+                black_turn(choose_node.new_move, screen)
+                delete_element(choose_node.last_move, screen)
+                game = copy.deepcopy(choose_node.game)
                 game.turn = 1
         else:
             running = False
@@ -188,7 +187,7 @@ def build_black_level(game, id, level, root):
 
 
 def min_max_algorithm(game, level):
-    root = AnyNode(id="/root", game=game)
+    root = AnyNode(id="/root", game=game, cost=0)
     next_root = [root]
     new_root_list = []
     current_level = 1
@@ -196,8 +195,8 @@ def min_max_algorithm(game, level):
     while aux_level > 0:
         for roots in next_root:
             if aux_level > 0:
-                for i in build_black_level(roots.game, roots.id, current_level, roots):
-                    for j in build_white_level(i.game, i.id, current_level, i):
+                for i in build_black_level(copy.deepcopy(roots.game), roots.id, current_level, roots):
+                    for j in build_white_level(copy.deepcopy(i.game), i.id, current_level, i):
                         new_root_list.append(j)
             else:
                 break
@@ -206,15 +205,82 @@ def min_max_algorithm(game, level):
         aux_level -= 1
         current_level += 1
     leaves = util.get_all_leave(root, level)
+    aux_level = level
     for leave in leaves:
         heuristic_white.heuristic_function(leave)
-        print(leave)
-    # print(leaves)
+    turn = 0
+    while aux_level > 0:
+        if turn == 0:
+            level_nodes = util.get_black_nodes_level(root, aux_level)
+            for nod in level_nodes:
+                node_child = list(nod.children)
+                if len(node_child) > 0:
+                    node_child.sort(key=lambda nod_b: nod_b.cost, reverse=True)
+                    nod.cost = node_child[0].cost
+            turn = 1
+            aux_level -= 1
+        else:
+            level_nodes = util.get_white_nodes_level(root, aux_level)
+            for nod in level_nodes:
+                node_child1 = list(nod.children)
+                if len(node_child1) > 0:
+                    node_child1.sort(key=lambda nod_c: nod_c.cost, reverse=False)
+                    nod.cost = node_child1[0].cost
+            turn = 0
+    root_child = list(root.children)
+    root_child.sort(key=lambda nod_b: nod_b.cost, reverse=False)
+    return root_child[0]
+
+
+def alpha_beta_pruning(game, level):
+    root = AnyNode(id="/root", game=game, cost=0)
+    next_root = [root]
+    new_root_list = []
+    current_level = 1
+    aux_level = level
+    while aux_level > 0:
+        for roots in next_root:
+            if aux_level > 0:
+                for i in build_black_level(copy.deepcopy(roots.game), roots.id, current_level, roots):
+                    for j in build_white_level(copy.deepcopy(i.game), i.id, current_level, i):
+                        new_root_list.append(j)
+            else:
+                break
+        next_root.clear()
+        next_root = copy.copy(new_root_list)
+        aux_level -= 1
+        current_level += 1
+    black_level = util.get_black_nodes_level(root, level)
+    end = 0
+    tmp = 0
+    maxim = 0
+    delete = 0
+    empty_node = AnyNode()
+    for i in black_level:
+        if len(i.children) > 0 and end == 0:
+            auxiliar = list(i.children)
+            for j in auxiliar:
+                heuristic_white.heuristic_function(j)
+            auxiliar.sort(key=lambda nod: nod.cost, reverse=True)
+            i.cost = auxiliar[0].cost
+            maxim = auxiliar[0].cost
+            end = 1
+        elif end == 1 and tmp == 1:
+            auxiliar = list(i.children)
+            if len(auxiliar) > 0:
+                for j in auxiliar:
+                    if delete == 0:
+                        heuristic_white.heuristic_function(j)
+                        if j.cost >= maxim:
+                            i.cost = j.cost
+                            delete = 1
+                    elif delete == 1:
+                        j.root = empty_node
+                delete = 0
+        tmp = 1
+
+    return root.children[0]
 
 
 if __name__ == "__main__":
-    # start_time = time.time()
-    # game = Game([(0, 6), (1, 6), (2, 6), (3, 6), (4, 6), (5, 6), (6, 6), (7, 6)], [(0, 1), (1, 1), (2, 1), (3, 1), (4, 1), (5, 1), (6, 1), (7, 1)])
-    # min_max_algorithm(game, 2)
-    # print(time.time() - start_time)
     initialize()
