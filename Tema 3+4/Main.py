@@ -160,8 +160,8 @@ def play(game, screen):
                     elif event.type == pygame.QUIT:
                         running = False
             else:
-                choose_node = min_max_algorithm(game, 2)
-                # choose_node = alpha_beta_pruning(game, 2)
+                # choose_node = min_max_algorithm(game, 2)
+                choose_node = alpha_beta_pruning(game, 2)
                 black_turn(choose_node.new_move, screen)
                 delete_element(choose_node.last_move, screen)
                 game = copy.deepcopy(choose_node.game)
@@ -254,8 +254,6 @@ def alpha_beta_pruning(game, level):
     end = 0
     tmp = 0
     maxim = 0
-    delete = 0
-    empty_node = AnyNode()
     for i in black_level:
         if len(i.children) > 0 and end == 0:
             auxiliar = list(i.children)
@@ -269,16 +267,19 @@ def alpha_beta_pruning(game, level):
             auxiliar = list(i.children)
             if len(auxiliar) > 0:
                 for j in auxiliar:
-                    if delete == 0:
-                        heuristic_white.heuristic_function(j)
-                        if j.cost >= maxim:
-                            i.cost = j.cost
-                            delete = 1
-                    elif delete == 1:
-                        j.root = empty_node
-                delete = 0
+                    heuristic_white.heuristic_function(j)
+                    if j.cost >= maxim:
+                        i.cost = j.cost
+                        break
+                if i.cost == 0:
+                    auxiliar.sort(key=lambda nod: nod.cost, reverse=True)
+                    i.cost = auxiliar[0].cost
         tmp = 1
-
+    level -= 1
+    util.update_line_values(root, level, 1)
+    root_child = list(root.children)
+    root_child.sort(key=lambda nod_b: nod_b.cost, reverse=False)
+    print(root.children[0])
     return root.children[0]
 
 

@@ -182,5 +182,26 @@ def board_patterns(updated_game, i, j):
     return current_board
 
 
+def update_line_values(root, level, turn):
+    while level > 0:
+        if turn == 0:
+            level_nodes = get_black_nodes_level(root, level)
+            for nod in level_nodes:
+                node_child = list(nod.children)
+                if len(node_child) > 0:
+                    node_child.sort(key=lambda nod_b: nod_b.cost, reverse=True)
+                    nod.cost = node_child[0].cost
+            turn = 1
+            level -= 1
+        else:
+            level_nodes = get_white_nodes_level(root, level)
+            for nod in level_nodes:
+                node_child1 = list(nod.children)
+                if len(node_child1) > 0:
+                    node_child1.sort(key=lambda nod_c: nod_c.cost, reverse=False)
+                    nod.cost = node_child1[0].cost
+            turn = 0
+
+
 if __name__ == "__main__":
     print(get_id_by_level_and_player(2, "black"))
