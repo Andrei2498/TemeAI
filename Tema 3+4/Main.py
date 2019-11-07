@@ -279,8 +279,7 @@ def alpha_beta_pruning(game, level):
     util.update_line_values(root, level, 1)
     root_child = list(root.children)
     root_child.sort(key=lambda nod_b: nod_b.cost, reverse=False)
-    print(root.children[0])
-    return root.children[0]
+    return root_child[0]
 
 
 if __name__ == "__main__":
