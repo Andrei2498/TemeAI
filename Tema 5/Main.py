@@ -1,3 +1,9 @@
+def show_matrix(matrix, length):
+    for j in range(0, length):
+        for k in range(0, length):
+            print(matrix[j][k], end=' ')
+        print()
+    print()
 
 
 def initialize_matrix(n):
@@ -6,7 +12,6 @@ def initialize_matrix(n):
 
 
 def is_safe(matrix, i, j, length):
-    print((i, j))
     for k in range(0, length):
         if i-k >= 0 and j-k >= 0:
             if matrix[i-k][j-k] == 1:
@@ -35,16 +40,14 @@ def backtracking(matrix, col):
         if is_safe(matrix, i, col, length):
             matrix[i][col] = 1
             if backtracking(matrix, col + 1):
+                show_matrix(matrix, length)
                 return True
             matrix[i][col] = 0
-        for j in range(0, length):
-            for k in range(0, length):
-                print(matrix[j][k], end=' ')
-            print()
-    print("Am ajuns aici")
+    # print("Am ajuns aici")
     return False
 
 
 if __name__ == '__main__':
-    backtracking(initialize_matrix(4), 0)
+    solution = initialize_matrix(5)
+    backtracking(initialize_matrix(5), 0)
 
