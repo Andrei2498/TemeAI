@@ -229,6 +229,7 @@ def min_max_algorithm(game, level):
             turn = 0
     root_child = list(root.children)
     root_child.sort(key=lambda nod_b: nod_b.cost, reverse=False)
+    print(root_child[0])
     return root_child[0]
 
 
@@ -250,6 +251,7 @@ def alpha_beta_pruning(game, level):
         next_root = copy.copy(new_root_list)
         aux_level -= 1
         current_level += 1
+    print("Am terminat de generat")
     black_level = util.get_black_nodes_level(root, level)
     end = 0
     tmp = 0
@@ -279,6 +281,7 @@ def alpha_beta_pruning(game, level):
     util.update_line_values(root, level, 1)
     root_child = list(root.children)
     root_child.sort(key=lambda nod_b: nod_b.cost, reverse=False)
+    print(root_child[0])
     return root_child[0]
 
 
