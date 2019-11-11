@@ -32,20 +32,20 @@ def is_safe(matrix, i, j, length):
     return True
 
 
-def backtracking(matrix, col):
+def backtracking(matrix, j):
     length = len(matrix)
-    if col >= length:
+    if j >= length:
         return True
     for i in range(0, length):
-        if is_safe(matrix, i, col, length):
-            matrix[i][col] = 1
-            if backtracking(matrix, col + 1):
-                show_matrix(matrix, length)
+        if is_safe(matrix, i, j, length):
+            matrix[i][j] = 1
+            if backtracking(matrix, j + 1):
                 return True
-            matrix[i][col] = 0
+            matrix[i][j] = 0
     return False
 
 
 if __name__ == '__main__':
     solution = initialize_matrix(8)
-    backtracking(initialize_matrix(8), 0)
+    backtracking(solution, 0)
+    show_matrix(solution, 8)
