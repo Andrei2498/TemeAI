@@ -13,17 +13,17 @@ def initialize_matrix(n):
 
 def is_safe(matrix, i, j, length):
     for k in range(0, length):
-        if i-k >= 0 and j-k >= 0:
-            if matrix[i-k][j-k] == 1:
+        if i - k >= 0 and j - k >= 0:
+            if matrix[i - k][j - k] == 1:
                 return False
-        if i-k >= 0 and j+k < length:
-            if matrix[i-k][j-k] == 1:
+        if i - k >= 0 and j + k < length:
+            if matrix[i - k][j - k] == 1:
                 return False
-        if i+k < length and j-k >= 0:
-            if matrix[i+k][j-k] == 1:
+        if i + k < length and j - k >= 0:
+            if matrix[i + k][j - k] == 1:
                 return False
-        if i+k < length and j+k < length:
-            if matrix[i+k][j+k] == 1:
+        if i + k < length and j + k < length:
+            if matrix[i + k][j + k] == 1:
                 return False
         if matrix[i][k] == 1:
             return False
@@ -43,11 +43,9 @@ def backtracking(matrix, col):
                 show_matrix(matrix, length)
                 return True
             matrix[i][col] = 0
-    # print("Am ajuns aici")
     return False
 
 
 if __name__ == '__main__':
-    solution = initialize_matrix(5)
-    backtracking(initialize_matrix(5), 0)
-
+    solution = initialize_matrix(8)
+    backtracking(initialize_matrix(8), 0)
