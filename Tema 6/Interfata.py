@@ -10,6 +10,9 @@ class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(821, 706)
+        MainWindow.setMaximumSize(821, 706)
+        MainWindow.setMinimumSize(821, 706)
+        MainWindow.move(1100, 0)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.groupBox = QtWidgets.QGroupBox(self.centralwidget)
@@ -18,9 +21,9 @@ class Ui_MainWindow(object):
         self.numar_epoci = QtWidgets.QLineEdit(self.groupBox)
         self.numar_epoci.setGeometry(QtCore.QRect(50, 50, 91, 22))
         self.numar_epoci.setObjectName("lineEdit")
-        self.textBrowser = QtWidgets.QTextBrowser(self.groupBox)
-        self.textBrowser.setGeometry(QtCore.QRect(10, 310, 361, 241))
-        self.textBrowser.setObjectName("textBrowser")
+        self.rn_screen = QtWidgets.QTextBrowser(self.groupBox)
+        self.rn_screen.setGeometry(QtCore.QRect(10, 310, 361, 241))
+        self.rn_screen.setObjectName("textBrowser")
         self.label = QtWidgets.QLabel(self.groupBox)
         self.label.setGeometry(QtCore.QRect(50, 30, 91, 16))
         self.label.setObjectName("label")
@@ -51,9 +54,9 @@ class Ui_MainWindow(object):
         self.textBrowser_2 = QtWidgets.QTextBrowser(self.groupBox_2)
         self.textBrowser_2.setGeometry(QtCore.QRect(10, 310, 361, 241))
         self.textBrowser_2.setObjectName("textBrowser_2")
-        self.pushButton_4 = QtWidgets.QPushButton(self.groupBox_2)
-        self.pushButton_4.setGeometry(QtCore.QRect(130, 260, 111, 41))
-        self.pushButton_4.setObjectName("pushButton_4")
+        self.recunoaste = QtWidgets.QPushButton(self.groupBox_2)
+        self.recunoaste.setGeometry(QtCore.QRect(130, 260, 111, 41))
+        self.recunoaste.setObjectName("pushButton_4")
         self.lcd_7 = QtWidgets.QPushButton(self.groupBox_2)
         self.lcd_7.setGeometry(QtCore.QRect(140, 190, 101, 16))
         self.lcd_7.setText("")
@@ -118,6 +121,7 @@ class Ui_MainWindow(object):
         self.eroarea_maxima.setValidator(self.onlyInt)
         self.numar_neuroni.setValidator(self.onlyInt)
         self.rata_de_invatare.setValidator(self.onlyInt)
+        self.recunoaste.clicked.connect(self.recunoaste_cifra)
 
         self.antreneaza.clicked.connect(self.antreneaza_metoda)
 
@@ -127,16 +131,22 @@ class Ui_MainWindow(object):
         self.rata_de_invatare.setText("0.5")
 
     def antreneaza_metoda(self):
-        rn.create_test_case_and_out()
-        rn.create_first_prob(len(rn.intrari))
-        print(list(dictionar_of_lcd_values.values()))
-        print(rn.initial_value)
-        print(rn.test_case)
-        print(rn.out_c)
-        print(rn.intrari)
+        res = rn.antreneaza_reteaua(int(self.numar_neuroni.text()), float(self.rata_de_invatare.text()),
+                              float(self.eroarea_maxima.text()), int(self.numar_epoci.text()))
+        output = ''
+        output += 'MSE= ' + res[1].__str__() + '\n\n'
+        for i in res[0]:
+            for j in i:
+                output += round(j, 2).__str__() + ' '
+            output += '\n'
+        self.rn_screen.setText(output)
+        print(res[0])
 
     def quit_app(self):
         sys.exit()
+
+    def recunoaste_cifra(self):
+        rn.recunoastere_numar(list(dictionar_of_lcd_values.values()))
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
@@ -148,7 +158,7 @@ class Ui_MainWindow(object):
         self.label_4.setText(_translate("MainWindow", "Rata de invatare"))
         self.antreneaza.setText(_translate("MainWindow", "Antreneaza"))
         self.groupBox_2.setTitle(_translate("MainWindow", "Testare"))
-        self.pushButton_4.setText(_translate("MainWindow", "Recunoaste"))
+        self.recunoaste.setText(_translate("MainWindow", "Recunoaste"))
         self.pushButton.setText(_translate("MainWindow", "Despre"))
         self.close_app.setText(_translate("MainWindow", "Iesire"))
 
