@@ -1,5 +1,6 @@
 import sys
-import rn
+# import rn
+import new_rn as RN
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QIntValidator
 
@@ -121,7 +122,7 @@ class Ui_MainWindow(object):
         self.eroarea_maxima.setValidator(self.onlyInt)
         self.numar_neuroni.setValidator(self.onlyInt)
         self.rata_de_invatare.setValidator(self.onlyInt)
-        self.recunoaste.clicked.connect(self.recunoaste_cifra)
+        # self.recunoaste.clicked.connect(self.recunoaste_cifra)
 
         self.antreneaza.clicked.connect(self.antreneaza_metoda)
 
@@ -131,22 +132,23 @@ class Ui_MainWindow(object):
         self.rata_de_invatare.setText("0.5")
 
     def antreneaza_metoda(self):
-        res = rn.antreneaza_reteaua(int(self.numar_neuroni.text()), float(self.rata_de_invatare.text()),
-                              float(self.eroarea_maxima.text()), int(self.numar_epoci.text()))
-        output = ''
-        output += 'MSE= ' + res[1].__str__() + '\n\n'
-        for i in res[0]:
-            for j in i:
-                output += round(j, 2).__str__() + ' '
-            output += '\n'
-        self.rn_screen.setText(output)
-        print(res[0])
+          RN.start(int(self.numar_neuroni.text()), float(self.rata_de_invatare.text()), float(self.eroarea_maxima.text()), int(self.numar_epoci.text()))
+    #     res = rn.antreneaza_reteaua(int(self.numar_neuroni.text()), float(self.rata_de_invatare.text()),
+    #                           float(self.eroarea_maxima.text()), int(self.numar_epoci.text()))
+    #     output = ''
+    #     output += 'MSE= ' + res[1].__str__() + '\n\n'
+    #     for i in res[0]:
+    #         for j in i:
+    #             output += round(j, 2).__str__() + ' '
+    #         output += '\n'
+    #     self.rn_screen.setText(output)
+    #     print(res[0])
 
     def quit_app(self):
         sys.exit()
 
-    def recunoaste_cifra(self):
-        rn.recunoastere_numar(list(dictionar_of_lcd_values.values()))
+    # def recunoaste_cifra(self):
+    #     rn.recunoastere_numar(list(dictionar_of_lcd_values.values()))
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
