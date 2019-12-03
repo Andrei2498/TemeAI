@@ -15,6 +15,11 @@ teta_list = []
 
 error_matrix = []
 
+def activation(input_1):
+    if input_1 > 0:
+        return 1
+    return 0
+
 
 def create_test_case(case: str):
     test_case.append([int(i) for i in case.split(" ")])
@@ -29,6 +34,9 @@ def create_test_case_and_out():
     test_case.clear()
     out_c.clear()
     text = f.readline().split(" ")
+    init_size = text[0]
+    iesiri = text[1]
+    test = text[2].replace("\n", '')
     while text:
         text = f.readline()
         if len(text) > 0:
@@ -38,14 +46,15 @@ def create_test_case_and_out():
 
 
 def create_first_prob(intrari_1, neuroni_ascunsi):
+    input_neuroni = intrari_1
+    strat_ascuns_number = neuroni_ascunsi
+
     global w_matrix_int
     global w_matrix_out
     w_matrix_int.clear()
     w_matrix_out.clear()
-    w_matrix_int = [[round(random.uniform(-0.1, 0.1), 4) for i in range(0, input_neuroni)] for j in
-                    range(0, strat_ascuns_number)]
-    w_matrix_out = [[round(random.uniform(-0.1, 0.1), 4) for i in range(0, neuroni_ascunsi)] for j in
-                    range(0, len(out_c))]
+    w_matrix_int = [[round(random.uniform(-0.1, 0.1), 4) for i in range(0, input_neuroni)] for j in range(0, strat_ascuns_number)]
+    w_matrix_out = [[round(random.uniform(-0.1, 0.1), 4) for i in range(0, neuroni_ascunsi)] for j in range(0, len(out_c))]
 
     global teta_strat_ascuns
     global teta_strat_final
@@ -58,18 +67,16 @@ def create_first_prob(intrari_1, neuroni_ascunsi):
     error_matrix.clear()
     error_matrix = [[] for i in range(0, len(out_c[0]))]
 
-
 def antreneaza_reteaua(numar_neuroni, rata_de_invatare, eroare_maxima, nr_epoci):
     create_test_case_and_out()
-    create_first_prob(7, numar_neuroni)
+    create_first_prob(7 , numar_neuroni)
     MSE = 0.0
     for i in range(0, nr_epoci):
         for j in range(0, len(test_case)):
             instanta_testata = test_case[j]
-            # expected_out = out_c[j]
+            expected_out = out_c[j]
 
             y_strat_ascuns = []
-            ## Ceva dubios
             for n in range(0, numar_neuroni):
                 curent_y = 0.0
                 for k in range(0, len(instanta_testata)):
@@ -91,6 +98,7 @@ def antreneaza_reteaua(numar_neuroni, rata_de_invatare, eroare_maxima, nr_epoci)
             error_matrix[j] = error_list
 
             gradientii_de_eroare = []
+            # y_strat_iesire[l] * (1 - y_strat_iesire[l]) * error_matrix[j][l]
             for l in range(0, len(out_c[0])):
                 gradientii_de_eroare.append(round(y_strat_iesire[l] * (1 - y_strat_iesire[l]) * error_matrix[j][l], 4))
 
@@ -107,9 +115,8 @@ def antreneaza_reteaua(numar_neuroni, rata_de_invatare, eroare_maxima, nr_epoci)
                         nd = 1
                 delta_w_o.append(local_delta)
             for k in range(0, numar_neuroni):
-                gradientii_de_eroare_level_ascuns.append(
-                    round(sum(w_matrix_out[k]) * gradientii_de_eroare[k] * y_strat_ascuns[k] * (1 - y_strat_ascuns[k]),
-                          4))
+                res = sum(w_matrix_out[k]) * gradientii_de_eroare[k]
+                gradientii_de_eroare_level_ascuns.append(round(res * y_strat_ascuns[k] * (1 - y_strat_ascuns[k]), 4))
 
             delta_teta_ascuns = []
             for k in range(0, numar_neuroni):
@@ -129,10 +136,8 @@ def antreneaza_reteaua(numar_neuroni, rata_de_invatare, eroare_maxima, nr_epoci)
             return error_matrix, round(MSE, 2)
     return error_matrix, round(MSE, 2)
 
-
 def recunoastere_numar(bits_number):
     print(out_c)
-
 
 def return_number_from_segment(segments):
     if segments == [1, 1, 1, 1, 1, 1, 1]:
@@ -155,3 +160,4 @@ def return_number_from_segment(segments):
         return 5
     elif segments == [1, 0, 1, 0, 0, 1, 0]:
         return 7
+

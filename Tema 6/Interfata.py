@@ -1,8 +1,10 @@
 import sys
 # import rn
-import new_rn as RN
+# import new_rn as RN
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtGui import QIntValidator
+
+import rn
 
 dictionar_of_lcd_values = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0}
 
@@ -132,17 +134,16 @@ class Ui_MainWindow(object):
         self.rata_de_invatare.setText("0.5")
 
     def antreneaza_metoda(self):
-          RN.start(int(self.numar_neuroni.text()), float(self.rata_de_invatare.text()), float(self.eroarea_maxima.text()), int(self.numar_epoci.text()))
-    #     res = rn.antreneaza_reteaua(int(self.numar_neuroni.text()), float(self.rata_de_invatare.text()),
-    #                           float(self.eroarea_maxima.text()), int(self.numar_epoci.text()))
-    #     output = ''
-    #     output += 'MSE= ' + res[1].__str__() + '\n\n'
-    #     for i in res[0]:
-    #         for j in i:
-    #             output += round(j, 2).__str__() + ' '
-    #         output += '\n'
-    #     self.rn_screen.setText(output)
-    #     print(res[0])
+          # RN.start(int(self.numar_neuroni.text()), float(self.rata_de_invatare.text()), float(self.eroarea_maxima.text()), int(self.numar_epoci.text()))
+        res = rn.antreneaza_reteaua(int(self.numar_neuroni.text()), float(self.rata_de_invatare.text()), float(self.eroarea_maxima.text()), int(self.numar_epoci.text()))
+        output = ''
+        output += 'MSE= ' + res[1].__str__() + '\n\n'
+        for i in res[0]:
+            for j in i:
+                output += round(j, 2).__str__() + ' '
+            output += '\n'
+        self.rn_screen.setText(output)
+        print(res[0])
 
     def quit_app(self):
         sys.exit()
